@@ -37,6 +37,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     if let Some(socket) = &cli.crash_handler {
+        #[cfg(not(target_arch = "s390x"))]
         crashes::crash_server(socket.as_path());
         return Ok(());
     }

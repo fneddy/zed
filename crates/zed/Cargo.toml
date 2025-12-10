@@ -45,7 +45,6 @@ collections.workspace = true
 command_palette.workspace = true
 component.workspace = true
 copilot.workspace = true
-crashes.workspace = true
 dap_adapters.workspace = true
 db.workspace = true
 debug_adapter_extension.workspace = true
@@ -178,6 +177,9 @@ winresource = "0.1"
 
 [target.'cfg(any(target_os = "linux", target_os = "freebsd"))'.dependencies]
 ashpd.workspace = true
+
+[target.'cfg(not(s390x))'.dependencies]
+crashes.workspace = true
 
 [dev-dependencies]
 call = { workspace = true, features = ["test-support"] }

@@ -1,16 +1,23 @@
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 use crash_handler::{CrashEventResult, CrashHandler};
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 use log::info;
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 use minidumper::{LoopAction, MinidumpBinary, Server, SocketName};
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 use std::{panic::Location, pin::Pin};
 
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 use system_specs::GpuSpecs;
 
+use std::{env, panic};
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 use std::{
-    env,
     fs::{self, File},
-    io, panic,
+    io,
     path::{Path, PathBuf},
     process::{self},
     sync::{
@@ -21,9 +28,12 @@ use std::{
     time::Duration,
 };
 
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 pub use minidumper::Client;
 
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 const CRASH_HANDLER_PING_TIMEOUT: Duration = Duration::from_secs(60);
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 const CRASH_HANDLER_CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 
 /// Force a backtrace to be printed on panic.
@@ -44,6 +54,7 @@ pub fn force_backtrace() {
 /// All work happens lazily in the returned future, so it runs on whichever
 /// executor polls it. The keepalive task is passed to `spawn` so the caller
 /// decides which executor to schedule it on.
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 pub fn init<F, S, C, P>(
     crash_init: InitCrashHandler,
     spawn: S,
@@ -62,6 +73,7 @@ where
 /// Spawn the crash-handler subprocess, connect the IPC client, and run the
 /// keepalive ping loop. This is the future returned by [`init`], so it runs on
 /// whichever executor the caller polls it with.
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 async fn connect_and_keepalive<F, C, S, P>(
     crash_init: InitCrashHandler,
     socket_path: P,
@@ -165,6 +177,7 @@ where
     client
 }
 
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 pub struct CrashServer {
     initialization_params: Mutex<Option<InitCrashHandler>>,
     panic_info: Mutex<Option<CrashPanic>>,
@@ -205,6 +218,7 @@ pub struct UserInfo {
     pub is_staff: Option<bool>,
 }
 
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 fn send_crash_server_message(crash_client: &Arc<Client>, message: CrashServerMessage) {
     let data = match serde_json::to_vec(&message) {
         Ok(data) => data,
@@ -219,15 +233,18 @@ fn send_crash_server_message(crash_client: &Arc<Client>, message: CrashServerMes
     }
 }
 
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 pub fn set_gpu_info(crash_client: &Arc<Client>, specs: GpuSpecs) {
     send_crash_server_message(crash_client, CrashServerMessage::GPUInfo(specs));
 }
 
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 pub fn set_user_info(crash_client: &Arc<Client>, info: UserInfo) {
     send_crash_server_message(crash_client, CrashServerMessage::UserInfo(info));
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 enum CrashServerMessage {
     Init(InitCrashHandler),
     Panic(CrashPanic),
@@ -235,6 +252,7 @@ enum CrashServerMessage {
     UserInfo(UserInfo),
 }
 
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 impl minidumper::ServerHandler for CrashServer {
     fn create_minidump_file(&self) -> Result<(File, PathBuf), io::Error> {
         let dump_path = self
@@ -336,6 +354,7 @@ impl minidumper::ServerHandler for CrashServer {
 /// Rust's string-slicing panics embed the user's string content in the message,
 /// e.g. "byte index 4 is out of bounds of `a`". Strip that suffix so we
 /// don't upload arbitrary user text in crash reports.
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 fn strip_user_string_from_panic(message: &str) -> String {
     const STRING_PANIC_PREFIXES: &[&str] = &[
         // Older rustc (pre-1.95):
@@ -359,6 +378,7 @@ fn strip_user_string_from_panic(message: &str) -> String {
     message.to_owned()
 }
 
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 pub fn panic_hook(crash_client: Arc<Client>, message: &str, location: Option<&Location>) {
     let message = strip_user_string_from_panic(message);
 
@@ -435,6 +455,7 @@ mod macos {
     }
 }
 #[cfg(not(target_os = "windows"))]
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 fn spawn_crash_handler(exe: &Path, socket_name: &Path) -> async_process::Child {
     async_process::Command::new(exe)
         .arg("--crash-handler")
@@ -444,6 +465,7 @@ fn spawn_crash_handler(exe: &Path, socket_name: &Path) -> async_process::Child {
 }
 
 #[cfg(target_os = "windows")]
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 fn spawn_crash_handler(exe: &Path, socket_name: &Path) {
     use std::ffi::OsStr;
     use std::iter::once;
@@ -494,6 +516,7 @@ fn spawn_crash_handler(exe: &Path, socket_name: &Path) {
     }
 }
 
+#[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
 pub fn crash_server(socket: &Path, logs_dir: PathBuf) {
     let Ok(mut server) = Server::with_name(SocketName::Path(socket)) else {
         log::info!("Couldn't create socket, there may already be a running crash server");

@@ -29,15 +29,18 @@ fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    if let Some(socket) = &cli.crash_handler {
+    if cli.crash_handler.is_some() {
         #[cfg(all(target_os = "linux", target_arch = "s390x"))]
         {
             anyhow::bail!("crash handler mode is unsupported on linux-s390x");
         }
 
         #[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
-        crashes::crash_server(socket.as_path(), paths::logs_dir().clone());
-        return Ok(());
+        {
+            let socket = cli.crash_handler.as_ref().expect("checked is_some above");
+            crashes::crash_server(socket.as_path(), paths::logs_dir().clone());
+            return Ok(());
+        }
     }
 
     if cli.printenv {

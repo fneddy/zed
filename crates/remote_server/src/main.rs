@@ -30,6 +30,12 @@ fn main() -> anyhow::Result<()> {
     }
 
     if let Some(socket) = &cli.crash_handler {
+        #[cfg(all(target_os = "linux", target_arch = "s390x"))]
+        {
+            anyhow::bail!("crash handler mode is unsupported on linux-s390x");
+        }
+
+        #[cfg(not(all(target_os = "linux", target_arch = "s390x")))]
         crashes::crash_server(socket.as_path(), paths::logs_dir().clone());
         return Ok(());
     }
